@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/dundunlabs/grapher"
+	"github.com/nilproj/grapher"
 )
 
 type Explorer struct {

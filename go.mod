@@ -1,4 +1,4 @@
-module github.com/dundunlabs/grapher
+module github.com/nilproj/grapher
 
 go 1.26.5
 
