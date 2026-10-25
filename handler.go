@@ -1,6 +1,7 @@
 package grapher
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -8,8 +9,9 @@ import (
 )
 
 type Handler struct {
-	Schema   *graphql.Schema
-	Explorer Explorer
+	Schema      *graphql.Schema
+	Explorer    Explorer
+	BaseContext func(req *http.Request) context.Context
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +40,10 @@ func (h *Handler) handlePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := ContextWithRequest(r.Context(), r)
+	ctx := r.Context()
+	if h.BaseContext != nil {
+		ctx = h.BaseContext(r)
+	}
 	result := h.Schema.Exec(ctx, params.Query, params.OperationName, params.Variables)
 
 	w.Header().Set("Content-Type", "application/json")
