@@ -1,6 +1,8 @@
 package scalar
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type GraphQLType interface {
 	ImplementsGraphQLType(string) bool
@@ -13,7 +15,7 @@ type Null[T any] struct {
 }
 
 func (t Null[T]) ImplementsGraphQLType(name string) bool {
-	switch t := any(t.Value).(type) {
+	switch typ := any(t.Value).(type) {
 	case *string:
 		return name == "String"
 	case *bool:
@@ -23,7 +25,7 @@ func (t Null[T]) ImplementsGraphQLType(name string) bool {
 	case *float64:
 		return name == "Float"
 	case GraphQLType:
-		return t.ImplementsGraphQLType(name)
+		return typ.ImplementsGraphQLType(name)
 	default:
 		return false
 	}
@@ -41,7 +43,23 @@ func (t *Null[T]) UnmarshalGraphQL(input any) error {
 		return nil
 	}
 
-	if v, ok := any(t.Value).(GraphQLType); ok {
+	switch v := any(t.Value).(type) {
+	case *float64:
+		switch i := input.(type) {
+		case int:
+			coerced := float64(i)
+			t.Value = any(&coerced).(*T)
+			return nil
+		case int32:
+			coerced := float64(i)
+			t.Value = any(&coerced).(*T)
+			return nil
+		case int64:
+			coerced := float64(i)
+			t.Value = any(&coerced).(*T)
+			return nil
+		}
+	case GraphQLType:
 		return v.UnmarshalGraphQL(input)
 	}
 
